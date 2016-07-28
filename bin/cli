@@ -1,0 +1,48 @@
+def find_user
+  puts "Input your email"
+  email = gets.chomp
+  raise "User doesn't exist" unless email && User.exists?(email: email)
+  User.find_by(email: email)
+end
+
+def create_short_url(user)
+  puts "Input your long url: "
+  long_url = gets.chomp
+  short_url = ShortenedUrl.create_for_user_and_long_url!(user, long_url)
+  puts "Your short url is #{short_url}"
+end
+
+def visit_short_url(user)
+  puts "Type in the short url: "
+  short_url = gets.chomp
+  shortened_url = ShortenedUrl.find_by(short_url: short_url)
+  Visit.record_visit!(user, shortened_url)
+  long_url = shortened_url.long_url
+  Launchy.open( long_url )
+end
+
+def run_sequence
+  continue = true
+  user = find_user
+  while continue
+    puts "What would you like to do?"
+    puts "1. Create shortened url"
+    puts "2. Visit shortened url"
+    choice = gets.chomp.to_i
+    case choice
+    when 1
+      create_short_url(user)
+    when 2
+      visit_short_url(user)
+    else
+      raise "Command not recognized"
+    end
+    puts "Would you like to logout? (y/n)"
+    continue = false if gets.chomp.downcase == 'y'
+    system('clear')
+  end
+  puts "Goodbye!"
+  return nil
+end
+
+run_sequence
